@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getPool } from '../_db';
+import { getPool, withErrorHandling } from '../_db';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default withErrorHandling(async function handler(req: VercelRequest, res: VercelResponse) {
   const id = typeof req.query.id === 'string' ? req.query.id : undefined;
   if (!id) {
     res.status(400).json({ error: 'Missing id' });
@@ -38,4 +38,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   res.setHeader('Allow', 'PUT, DELETE');
   res.status(405).json({ error: 'Method not allowed' });
-}
+});

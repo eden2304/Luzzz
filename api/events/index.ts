@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getPool, toApiEvent, isValidEvent, type EventRow } from '../_db';
+import { getPool, toApiEvent, isValidEvent, withErrorHandling, type EventRow } from '../_db';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default withErrorHandling(async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = getPool();
 
   if (req.method === 'GET') {
@@ -29,4 +29,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   res.setHeader('Allow', 'GET, POST');
   res.status(405).json({ error: 'Method not allowed' });
-}
+});

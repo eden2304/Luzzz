@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getPool, isValidEvent } from './_db';
+import { getPool, isValidEvent, withErrorHandling } from './_db';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default withErrorHandling(async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     res.status(405).json({ error: 'Method not allowed' });
@@ -34,4 +34,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   res.status(201).json({ ok: true, count: events.length });
-}
+});

@@ -1,3 +1,4 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Pool } from 'pg';
 
 let pool: Pool | undefined;
@@ -45,6 +46,20 @@ export function toApiEvent(row: EventRow): ApiEvent {
     endTime: row.end_time,
     color: row.color,
     note: row.note ?? undefined,
+  };
+}
+
+export function withErrorHandling(
+  handler: (req: VercelRequest, res: VercelResponse) => Promise<void>
+) {
+  return async (req: VercelRequest, res: VercelResponse): Promise<void> => {
+    try {
+      await handler(req, res);
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      res.status(500).json({ error: message });
+    }
   };
 }
 
