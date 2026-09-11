@@ -803,6 +803,37 @@ html, body {
   line-height: 1.5;
 }
 
+/* Confirm popup */
+.confirm-sheet {
+  max-width: 340px;
+  text-align: center;
+  padding-top: 4px;
+}
+
+.confirm-icon {
+  display: block;
+  font-size: 34px;
+  margin: 4px 0 10px;
+}
+
+.confirm-message {
+  margin: 0 0 22px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-btn {
+  flex: 1;
+  padding: 13px;
+}
+
 .day-empty-state {
   text-align: center;
   padding: 30px 10px;

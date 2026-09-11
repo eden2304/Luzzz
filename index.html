@@ -191,6 +191,19 @@
       </div>
     </div>
 
+    <!-- Styled confirmation popup (replaces native confirm()) -->
+    <div id="confirm-modal" class="modal-overlay hidden" role="alertdialog" aria-modal="true">
+      <div class="modal-sheet confirm-sheet">
+        <div class="sheet-handle"></div>
+        <span class="confirm-icon">🗑️</span>
+        <p id="confirm-message" class="confirm-message"></p>
+        <div class="confirm-actions">
+          <button id="confirm-cancel-btn" class="pill-btn confirm-btn" type="button">ביטול</button>
+          <button id="confirm-ok-btn" class="danger-btn confirm-btn" type="button">מחיקה</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

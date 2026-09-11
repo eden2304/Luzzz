@@ -53,6 +53,10 @@ const detailsTime = document.getElementById('details-time') as HTMLElement;
 const detailsDate = document.getElementById('details-date') as HTMLElement;
 const detailsNote = document.getElementById('details-note') as HTMLElement;
 
+const confirmMessage = document.getElementById('confirm-message') as HTMLElement;
+const confirmCancelBtn = document.getElementById('confirm-cancel-btn') as HTMLButtonElement;
+const confirmOkBtn = document.getElementById('confirm-ok-btn') as HTMLButtonElement;
+
 const modeToggle = document.getElementById('mode-toggle') as HTMLElement;
 const singleDateField = document.getElementById('single-date-field') as HTMLElement;
 const multiDateField = document.getElementById('multi-date-field') as HTMLElement;
@@ -177,6 +181,36 @@ function closeModal(id: string): void {
   if (!anyOpen) document.body.style.overflow = '';
 }
 
+function showConfirmModal(message: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    confirmMessage.textContent = message;
+    const modalEl = document.getElementById('confirm-modal') as HTMLElement;
+    let settled = false;
+
+    const finish = (result: boolean) => {
+      if (settled) return;
+      settled = true;
+      confirmOkBtn.removeEventListener('click', onOk);
+      confirmCancelBtn.removeEventListener('click', onCancel);
+      observer.disconnect();
+      resolve(result);
+    };
+    const onOk = () => { closeModal('confirm-modal'); finish(true); };
+    const onCancel = () => { closeModal('confirm-modal'); finish(false); };
+
+    // catches dismissal via backdrop click / Escape / any other generic close path
+    const observer = new MutationObserver(() => {
+      if (modalEl.classList.contains('hidden')) finish(false);
+    });
+    observer.observe(modalEl, { attributes: true, attributeFilter: ['class'] });
+
+    confirmOkBtn.addEventListener('click', onOk);
+    confirmCancelBtn.addEventListener('click', onCancel);
+    openModal('confirm-modal');
+    requestAnimationFrame(() => confirmCancelBtn.focus());
+  });
+}
+
 function dismissDayModal(): void {
   closeModal('day-modal');
   selectedDateKey = null;
@@ -208,9 +242,10 @@ document.querySelectorAll<HTMLElement>('.modal-overlay').forEach((overlay) => {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    document.querySelectorAll<HTMLElement>('.modal-overlay:not(.hidden)').forEach((overlay) => {
-      handleDismiss(overlay.id);
-    });
+    // only the topmost stacked modal (later in DOM = visually on top) — not every open one
+    const openOverlays = document.querySelectorAll<HTMLElement>('.modal-overlay:not(.hidden)');
+    const topmost = openOverlays[openOverlays.length - 1];
+    if (topmost) handleDismiss(topmost.id);
   }
 });
 
@@ -396,10 +431,11 @@ eventForm.addEventListener('submit', (e) => {
   if (cameFromDayModal) openModal('day-modal');
 });
 
-function deleteEventById(id: string, options: { fromEventForm: boolean }): void {
+async function deleteEventById(id: string, options: { fromEventForm: boolean }): Promise<void> {
   const removed = events.find((e) => e.id === id);
   if (!removed) return;
-  if (!confirm('למחוק את האירוע הזה?')) return;
+  const confirmed = await showConfirmModal(`למחוק את "${removed.title}"?`);
+  if (!confirmed) return;
   events = events.filter((e) => e.id !== id);
   showToast('האירוע נמחק');
   selectedDateKey = removed.date;
