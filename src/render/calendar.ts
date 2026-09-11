@@ -1,4 +1,5 @@
 import { buildMonthGrid, HEBREW_MONTHS, HEBREW_WEEKDAYS_SHORT, timeToMinutes } from '../dateUtils';
+import { getHolidayName } from '../holidays';
 import type { CalEvent } from '../types';
 
 const weekdayRow = document.getElementById('weekday-row') as HTMLElement;
@@ -57,6 +58,14 @@ export function renderCalendar(
     num.className = 'day-number';
     num.textContent = String(cell.day);
     btn.appendChild(num);
+
+    const holidayName = getHolidayName(cell.dateKey);
+    if (holidayName) {
+      const holidayEl = document.createElement('span');
+      holidayEl.className = 'holiday-label';
+      holidayEl.textContent = holidayName;
+      btn.appendChild(holidayEl);
+    }
 
     if (dayEvents.length > 0) {
       const dots = document.createElement('div');

@@ -1,5 +1,6 @@
 import type { CalEvent } from '../types';
 import { formatDateKeyHuman, timeToMinutes } from '../dateUtils';
+import { getHolidayName } from '../holidays';
 import { createEventCard } from './eventCard';
 
 const titleEl = document.getElementById('day-modal-title') as HTMLElement;
@@ -12,6 +13,14 @@ export function renderDayModal(
 ): void {
   titleEl.textContent = formatDateKeyHuman(dateKey);
   listEl.innerHTML = '';
+
+  const holidayName = getHolidayName(dateKey);
+  if (holidayName) {
+    const banner = document.createElement('div');
+    banner.className = 'holiday-banner';
+    banner.innerHTML = `<span class="holiday-banner-icon">✡️</span>${holidayName}`;
+    listEl.appendChild(banner);
+  }
 
   const dayEvents = events
     .filter((e) => e.date === dateKey)
