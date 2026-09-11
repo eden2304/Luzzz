@@ -1,0 +1,14 @@
+{
+  "name": "לוזזזז",
+  "short_name": "לוזזזז",
+  "description": "לוח הזמנים האישי שלך",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff5f8",
+  "theme_color": "#ff8fb8",
+  "dir": "rtl",
+  "lang": "he",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
