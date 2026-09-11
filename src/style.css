@@ -401,10 +401,7 @@ html, body {
   max-height: 30px;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
-  scroll-padding: 2px 0;
-  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   flex-shrink: 0;
   scrollbar-width: thin;
 }
@@ -429,7 +426,6 @@ html, body {
   text-overflow: ellipsis;
   font-weight: 600;
   flex-shrink: 0;
-  scroll-snap-align: start;
 }
 
 @media (min-width: 860px) {
