@@ -9,11 +9,14 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
+    "@vercel/node": "^13.0.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "pg": "^8.23.0",
     "tailwindcss": "^4.3.3"
   }
 }

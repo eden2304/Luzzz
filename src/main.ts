@@ -1,6 +1,6 @@
 import './style.css';
 import type { CalEvent } from './types';
-import { loadEvents, saveEvents, createId } from './storage';
+import { fetchEvents, createEvent, createEventsBatch, updateEvent, deleteEvent, createId } from './storage';
 import { todayKey, timeToMinutes, minutesToTime } from './dateUtils';
 import { DEFAULT_EVENT_COLOR } from './colors';
 import { renderCalendar } from './render/calendar';
@@ -14,7 +14,7 @@ import { initMiniCalendar, type MiniCalendar } from './render/miniCalendar';
 import { showToast } from './toast';
 
 // ---------- State ----------
-let events: CalEvent[] = loadEvents();
+let events: CalEvent[] = [];
 const today = new Date();
 let viewYear = today.getFullYear();
 let viewMonth = today.getMonth();
@@ -41,6 +41,8 @@ const formTitle = document.getElementById('event-form-title') as HTMLElement;
 const formError = document.getElementById('form-error') as HTMLElement;
 const deleteBtn = document.getElementById('delete-event-btn') as HTMLButtonElement;
 const calendarGrid = document.getElementById('calendar-grid') as HTMLElement;
+
+const syncBanner = document.getElementById('sync-banner') as HTMLButtonElement;
 
 const modeToggle = document.getElementById('mode-toggle') as HTMLElement;
 const singleDateField = document.getElementById('single-date-field') as HTMLElement;
@@ -90,6 +92,47 @@ function computeDefaultStart(): string {
   const now = new Date();
   const rounded = Math.ceil(now.getMinutes() / 15) * 15;
   return minutesToTime(now.getHours() * 60 + rounded);
+}
+
+// ---------- Sync with the server ----------
+function showLoadingBanner(): void {
+  syncBanner.textContent = 'טוען אירועים…';
+  syncBanner.className = 'sync-banner loading';
+}
+
+function showErrorBanner(): void {
+  syncBanner.textContent = 'שגיאה בטעינת האירועים — לחצו לנסות שוב';
+  syncBanner.className = 'sync-banner error';
+}
+
+function hideBanner(): void {
+  syncBanner.className = 'sync-banner hidden';
+}
+
+async function loadInitialEvents(): Promise<void> {
+  showLoadingBanner();
+  try {
+    events = await fetchEvents();
+    hideBanner();
+  } catch (err) {
+    console.error(err);
+    showErrorBanner();
+  }
+  refresh();
+}
+
+syncBanner.addEventListener('click', () => {
+  if (syncBanner.classList.contains('error')) loadInitialEvents();
+});
+
+/** Fires an API call in the background after an optimistic local update; rolls back on failure. */
+function syncInBackground(promise: Promise<void>, rollback: () => void): void {
+  promise.catch((err) => {
+    console.error(err);
+    rollback();
+    refresh();
+    showToast('שגיאה בסנכרון — נסו שוב 😕');
+  });
 }
 
 // ---------- Modal helpers ----------
@@ -251,24 +294,26 @@ eventForm.addEventListener('submit', (e) => {
       formError.classList.remove('hidden');
       return;
     }
-    for (const date of dates) {
-      events.push({
-        id: createId(),
-        title,
-        date,
-        startTime: start,
-        endTime: end,
-        note: note || undefined,
-        color,
-      });
-    }
-    saveEvents(events);
+    const newEvents: CalEvent[] = dates.map((date) => ({
+      id: createId(),
+      title,
+      date,
+      startTime: start,
+      endTime: end,
+      note: note || undefined,
+      color,
+    }));
+    events.push(...newEvents);
     showToast(dates.length === 1 ? 'האירוע נוסף בהצלחה 🌸' : `${dates.length} אירועים נוספו בהצלחה 🌸`);
     const last = dates[dates.length - 1];
     viewYear = Number(last.slice(0, 4));
     viewMonth = Number(last.slice(5, 7)) - 1;
     closeModal('event-form-modal');
     refresh();
+    syncInBackground(createEventsBatch(newEvents), () => {
+      const ids = new Set(newEvents.map((ev) => ev.id));
+      events = events.filter((ev) => !ids.has(ev.id));
+    });
     return;
   }
 
@@ -277,15 +322,24 @@ eventForm.addEventListener('submit', (e) => {
   if (editingEventId) {
     const idx = events.findIndex((e2) => e2.id === editingEventId);
     if (idx !== -1) {
-      events[idx] = { ...events[idx], title, date, startTime: start, endTime: end, note: note || undefined, color };
+      const previous = events[idx];
+      const updated: CalEvent = { ...previous, title, date, startTime: start, endTime: end, note: note || undefined, color };
+      events[idx] = updated;
+      showToast('האירוע עודכן בהצלחה 🌸');
+      syncInBackground(updateEvent(updated), () => {
+        const i2 = events.findIndex((e2) => e2.id === updated.id);
+        if (i2 !== -1) events[i2] = previous;
+      });
     }
-    showToast('האירוע עודכן בהצלחה 🌸');
   } else {
-    events.push({ id: createId(), title, date, startTime: start, endTime: end, note: note || undefined, color });
+    const newEvent: CalEvent = { id: createId(), title, date, startTime: start, endTime: end, note: note || undefined, color };
+    events.push(newEvent);
     showToast('האירוע נוסף בהצלחה 🌸');
+    syncInBackground(createEvent(newEvent), () => {
+      events = events.filter((ev) => ev.id !== newEvent.id);
+    });
   }
 
-  saveEvents(events);
   viewYear = Number(date.slice(0, 4));
   viewMonth = Number(date.slice(5, 7)) - 1;
   selectedDateKey = date;
@@ -297,14 +351,17 @@ eventForm.addEventListener('submit', (e) => {
 deleteBtn.addEventListener('click', () => {
   if (!editingEventId) return;
   if (!confirm('למחוק את האירוע הזה?')) return;
-  const deletedDate = events.find((e) => e.id === editingEventId)?.date ?? selectedDateKey;
+  const removed = events.find((e) => e.id === editingEventId);
+  if (!removed) return;
   events = events.filter((e) => e.id !== editingEventId);
-  saveEvents(events);
   showToast('האירוע נמחק');
-  selectedDateKey = deletedDate;
+  selectedDateKey = removed.date;
   closeModal('event-form-modal');
   refresh();
   if (cameFromDayModal) openModal('day-modal');
+  syncInBackground(deleteEvent(removed.id), () => {
+    events.push(removed);
+  });
 });
 
 // ---------- Navigation ----------
@@ -373,4 +430,4 @@ function onSearchResultClick(ev: CalEvent): void {
 }
 
 // ---------- Init ----------
-refresh();
+loadInitialEvents();
