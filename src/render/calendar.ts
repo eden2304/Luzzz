@@ -80,18 +80,12 @@ export function renderCalendar(
 
       const chips = document.createElement('div');
       chips.className = 'day-chips';
-      for (const ev of dayEvents.slice(0, 2)) {
+      for (const ev of dayEvents) {
         const chip = document.createElement('span');
         chip.className = 'day-chip';
         chip.style.background = ev.color;
         chip.textContent = ev.title;
         chips.appendChild(chip);
-      }
-      if (dayEvents.length > 2) {
-        const more = document.createElement('span');
-        more.className = 'day-chip-more';
-        more.textContent = `+${dayEvents.length - 2} עוד`;
-        chips.appendChild(more);
       }
       btn.appendChild(chips);
     }
