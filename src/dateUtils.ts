@@ -84,3 +84,30 @@ export function timeToMinutes(t: string): number {
   const [h, m] = t.split(':').map(Number);
   return h * 60 + m;
 }
+
+export function minutesToTime(total: number): string {
+  const wrapped = ((total % 1440) + 1440) % 1440;
+  const h = Math.floor(wrapped / 60);
+  const m = wrapped % 60;
+  return `${pad2(h)}:${pad2(m)}`;
+}
+
+export function parseDateKey(key: string): Date {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+export function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+export function dateToKey(date: Date): string {
+  return toDateKey(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+export function formatDateShort(dateKey: string): string {
+  const [, m, d] = dateKey.split('-').map(Number);
+  return `${d} ב${HEBREW_MONTHS[m - 1]}`;
+}

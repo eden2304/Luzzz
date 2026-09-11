@@ -607,6 +607,7 @@ html, body {
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .field-row {
@@ -635,6 +636,217 @@ html, body {
 .field input:focus {
   border-color: var(--pink-400);
   background: var(--white);
+}
+
+/* Mode toggle (single day / multiple dates) */
+.mode-toggle {
+  display: flex;
+  gap: 6px;
+  background: var(--pink-50);
+  padding: 4px;
+  border-radius: var(--radius-md);
+}
+
+.mode-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 9px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: inherit;
+}
+
+.mode-btn.active {
+  background: var(--white);
+  color: var(--pink-600);
+  box-shadow: 0 2px 8px hsl(var(--shadow-color) / 0.35);
+}
+
+/* Chip scroller (date + time pickers) */
+.chip-scroller-wrap {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--pink-50);
+  padding: 8px 6px;
+  min-width: 0;
+}
+
+.chip-scroller {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 2px 4px;
+  min-width: 0;
+}
+
+.chip-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 46px;
+  padding: 8px 6px;
+  border-radius: 12px;
+  border: none;
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  position: relative;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
+
+.chip-selected {
+  background: linear-gradient(135deg, var(--pink-400), var(--pink-600));
+  color: var(--white);
+}
+
+.chip-line1 {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.chip-line2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.chip-line2:empty {
+  display: none;
+}
+
+.chip .chip-line1:only-child,
+.time-scroller .chip-line1 {
+  font-size: 13.5px;
+  font-weight: 700;
+  opacity: 1;
+}
+
+.chip-marker {
+  position: absolute;
+  top: -9px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--pink-600);
+  background: var(--pink-100);
+  padding: 1px 5px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.time-scroller .chip {
+  min-width: 58px;
+}
+
+.picker-readable {
+  display: block;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--pink-600);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Mini multi-select calendar */
+.mini-calendar {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--pink-50);
+  padding: 10px;
+}
+
+.mini-cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+}
+
+.mini-cal-label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mini-cal-nav {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: var(--white);
+  color: var(--pink-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mini-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.mini-cal-weekdays span {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.mini-cal-cell {
+  aspect-ratio: 1 / 1;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.mini-cal-cell:hover {
+  background: var(--pink-100);
+}
+
+.mini-cal-cell.muted {
+  color: #d8c9d0;
+}
+
+.mini-cal-cell.is-today {
+  box-shadow: inset 0 0 0 1.5px var(--pink-400);
+}
+
+.mini-cal-cell.is-picked {
+  background: linear-gradient(135deg, var(--pink-400), var(--pink-600));
+  color: var(--white);
+  box-shadow: none;
 }
 
 .color-picker {

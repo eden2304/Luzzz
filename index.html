@@ -86,23 +86,35 @@
         <form id="event-form" class="event-form">
           <label class="field">
             <span class="field-label">שם האירוע</span>
-            <input id="ev-title" name="title" type="text" placeholder="לדוגמה: פגישה עם דנה" required maxlength="80" />
+            <input id="ev-title" name="title" type="text" placeholder="לדוגמה: דייט עם עדן" required maxlength="80" />
           </label>
 
-          <label class="field">
+          <div id="mode-toggle" class="mode-toggle">
+            <button type="button" class="mode-btn active" data-mode="single">יום בודד</button>
+            <button type="button" class="mode-btn" data-mode="multi">מספר תאריכים</button>
+          </div>
+
+          <div id="single-date-field" class="field">
             <span class="field-label">תאריך</span>
-            <input id="ev-date" name="date" type="date" required />
-          </label>
+            <div id="date-picker" class="chip-scroller-wrap"></div>
+            <span id="date-readable" class="picker-readable"></span>
+          </div>
+
+          <div id="multi-date-field" class="field hidden">
+            <span class="field-label">בחרו תאריכים ללוז</span>
+            <div id="mini-calendar" class="mini-calendar"></div>
+            <span id="multi-date-count" class="picker-readable">לא נבחרו תאריכים</span>
+          </div>
 
           <div class="field-row">
-            <label class="field">
+            <div class="field">
               <span class="field-label">שעת התחלה</span>
-              <input id="ev-start" name="start" type="time" required />
-            </label>
-            <label class="field">
+              <div id="start-time-picker" class="chip-scroller-wrap time-scroller"></div>
+            </div>
+            <div class="field">
               <span class="field-label">שעת סיום</span>
-              <input id="ev-end" name="end" type="time" required />
-            </label>
+              <div id="end-time-picker" class="chip-scroller-wrap time-scroller"></div>
+            </div>
           </div>
 
           <label class="field">

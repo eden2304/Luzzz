@@ -1,12 +1,7 @@
 import type { CalEvent } from '../types';
-import { HEBREW_MONTHS, timeToMinutes, todayKey } from '../dateUtils';
+import { formatDateShort, timeToMinutes, todayKey } from '../dateUtils';
 
 const listEl = document.getElementById('agenda-list') as HTMLElement;
-
-function formatShort(dateKey: string): string {
-  const [, m, d] = dateKey.split('-').map(Number);
-  return `${d} ב${HEBREW_MONTHS[m - 1]}`;
-}
 
 export function renderAgenda(events: CalEvent[], onItemClick: (ev: CalEvent) => void): void {
   listEl.innerHTML = '';
@@ -45,7 +40,7 @@ export function renderAgenda(events: CalEvent[], onItemClick: (ev: CalEvent) => 
     `;
     (text.querySelector('.agenda-item-title') as HTMLElement).textContent = ev.title;
     (text.querySelector('.agenda-item-meta') as HTMLElement).textContent =
-      `${formatShort(ev.date)} · ${ev.startTime}`;
+      `${formatDateShort(ev.date)} · ${ev.startTime}`;
     item.appendChild(text);
 
     item.addEventListener('click', () => onItemClick(ev));
