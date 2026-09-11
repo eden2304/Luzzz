@@ -20,9 +20,9 @@ export default withErrorHandling(async function handler(req: VercelRequest, res:
     await client.query('BEGIN');
     for (const ev of events) {
       await client.query(
-        `INSERT INTO events (id, title, date, start_time, end_time, color, note)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [ev.id, ev.title, ev.date, ev.startTime, ev.endTime, ev.color, ev.note ?? null]
+        `INSERT INTO events (id, title, date, start_time, end_time, color, note, remind_day_before)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [ev.id, ev.title, ev.date, ev.startTime, ev.endTime, ev.color, ev.note ?? null, ev.remindDayBefore ?? false]
       );
     }
     await client.query('COMMIT');

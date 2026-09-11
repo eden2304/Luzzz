@@ -11,16 +11,17 @@ export default withErrorHandling(async function handler(req: VercelRequest, res:
   const pool = getPool();
 
   if (req.method === 'PUT') {
-    const { title, date, startTime, endTime, color, note } = req.body ?? {};
+    const { title, date, startTime, endTime, color, note, remindDayBefore } = req.body ?? {};
     if (!title || !date || !startTime || !endTime || !color) {
       res.status(400).json({ error: 'Invalid event payload' });
       return;
     }
     const result = await pool.query(
       `UPDATE events
-       SET title = $1, date = $2, start_time = $3, end_time = $4, color = $5, note = $6
-       WHERE id = $7`,
-      [title, date, startTime, endTime, color, note ?? null, id]
+       SET title = $1, date = $2, start_time = $3, end_time = $4, color = $5, note = $6,
+           remind_day_before = $7, reminder_sent_at = NULL
+       WHERE id = $8`,
+      [title, date, startTime, endTime, color, note ?? null, remindDayBefore ?? false, id]
     );
     if (result.rowCount === 0) {
       res.status(404).json({ error: 'Event not found' });

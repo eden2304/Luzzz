@@ -47,6 +47,11 @@
 
       <button id="sync-banner" class="sync-banner hidden" type="button"></button>
 
+      <button id="notif-banner" class="notif-banner hidden" type="button">
+        <span class="notif-banner-icon">🔔</span>
+        <span>הפעילו התראות כדי לקבל תזכורת יום לפני כל אירוע</span>
+      </button>
+
       <main class="main-layout">
         <section class="calendar-panel">
           <div class="weekday-row" id="weekday-row"></div>
@@ -132,6 +137,14 @@
             <span class="field-label">צבע</span>
             <div id="color-picker" class="color-picker"></div>
           </div>
+
+          <label class="reminder-field">
+            <input type="checkbox" id="ev-remind" class="reminder-checkbox" />
+            <span class="reminder-toggle">
+              <span class="reminder-icon">🔔</span>
+              <span>תזכורת יום לפני</span>
+            </span>
+          </label>
 
           <p id="form-error" class="form-error hidden"></p>
 

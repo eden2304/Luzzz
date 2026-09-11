@@ -8,4 +8,15 @@ CREATE TABLE IF NOT EXISTS events (
   note TEXT
 );
 
+ALTER TABLE events ADD COLUMN IF NOT EXISTS remind_day_before BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE events ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMPTZ;
+
 CREATE INDEX IF NOT EXISTS events_date_idx ON events (date);
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id SERIAL PRIMARY KEY,
+  endpoint TEXT UNIQUE NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

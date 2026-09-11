@@ -17,11 +17,11 @@ export default withErrorHandling(async function handler(req: VercelRequest, res:
       res.status(400).json({ error: 'Invalid event payload' });
       return;
     }
-    const { id, title, date, startTime, endTime, color, note } = req.body;
+    const { id, title, date, startTime, endTime, color, note, remindDayBefore } = req.body;
     await pool.query(
-      `INSERT INTO events (id, title, date, start_time, end_time, color, note)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [id, title, date, startTime, endTime, color, note ?? null]
+      `INSERT INTO events (id, title, date, start_time, end_time, color, note, remind_day_before)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [id, title, date, startTime, endTime, color, note ?? null, remindDayBefore ?? false]
     );
     res.status(201).json({ ok: true, id });
     return;

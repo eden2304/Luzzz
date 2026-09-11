@@ -12,6 +12,7 @@ import { initDatePicker, type DatePicker } from './render/datePicker';
 import { initTimePicker, type TimePicker } from './render/timePicker';
 import { initMiniCalendar, type MiniCalendar } from './render/miniCalendar';
 import { showToast } from './toast';
+import { isPushSupported, getNotificationPermission, enablePushNotifications } from './push';
 
 // ---------- State ----------
 let events: CalEvent[] = [];
@@ -37,12 +38,14 @@ const searchInput = document.getElementById('search-input') as HTMLInputElement;
 const eventForm = document.getElementById('event-form') as HTMLFormElement;
 const evTitle = document.getElementById('ev-title') as HTMLInputElement;
 const evNote = document.getElementById('ev-note') as HTMLInputElement;
+const evRemind = document.getElementById('ev-remind') as HTMLInputElement;
 const formTitle = document.getElementById('event-form-title') as HTMLElement;
 const formError = document.getElementById('form-error') as HTMLElement;
 const deleteBtn = document.getElementById('delete-event-btn') as HTMLButtonElement;
 const calendarGrid = document.getElementById('calendar-grid') as HTMLElement;
 
 const syncBanner = document.getElementById('sync-banner') as HTMLButtonElement;
+const notifBanner = document.getElementById('notif-banner') as HTMLButtonElement;
 
 const modeToggle = document.getElementById('mode-toggle') as HTMLElement;
 const singleDateField = document.getElementById('single-date-field') as HTMLElement;
@@ -134,6 +137,23 @@ function syncInBackground(promise: Promise<void>, rollback: () => void): void {
     showToast('שגיאה בסנכרון — נסו שוב 😕');
   });
 }
+
+// ---------- Push notifications ----------
+const NOTIF_DISMISSED_KEY = 'luzzz.notifBannerDismissed';
+
+function initNotificationBanner(): void {
+  if (!isPushSupported()) return;
+  if (getNotificationPermission() !== 'default') return;
+  if (localStorage.getItem(NOTIF_DISMISSED_KEY)) return;
+  notifBanner.classList.remove('hidden');
+}
+
+notifBanner.addEventListener('click', async () => {
+  notifBanner.classList.add('hidden');
+  localStorage.setItem(NOTIF_DISMISSED_KEY, '1');
+  const ok = await enablePushNotifications();
+  showToast(ok ? 'התראות הופעלו 🔔' : 'לא הצלחנו להפעיל התראות');
+});
 
 // ---------- Modal helpers ----------
 function openModal(id: string): void {
@@ -228,6 +248,7 @@ function resetForm(): void {
   deleteBtn.classList.add('hidden');
   editingEventId = null;
   endManuallySet = false;
+  evRemind.checked = false;
   setSelectedColor(DEFAULT_EVENT_COLOR);
   setFormMode('single');
 }
@@ -254,6 +275,7 @@ function openEventFormForEdit(ev: CalEvent): void {
   editingEventId = ev.id;
   evTitle.value = ev.title;
   evNote.value = ev.note ?? '';
+  evRemind.checked = !!ev.remindDayBefore;
   setSelectedColor(ev.color);
   deleteBtn.classList.remove('hidden');
   modeToggle.classList.add('hidden');
@@ -275,6 +297,7 @@ eventForm.addEventListener('submit', (e) => {
   const end = endTimePicker.getTime();
   const note = evNote.value.trim();
   const color = getSelectedColor();
+  const remindDayBefore = evRemind.checked;
 
   if (!title) {
     formError.textContent = 'נא להזין שם לאירוע';
@@ -302,6 +325,7 @@ eventForm.addEventListener('submit', (e) => {
       endTime: end,
       note: note || undefined,
       color,
+      remindDayBefore,
     }));
     events.push(...newEvents);
     showToast(dates.length === 1 ? 'האירוע נוסף בהצלחה 🌸' : `${dates.length} אירועים נוספו בהצלחה 🌸`);
@@ -323,7 +347,7 @@ eventForm.addEventListener('submit', (e) => {
     const idx = events.findIndex((e2) => e2.id === editingEventId);
     if (idx !== -1) {
       const previous = events[idx];
-      const updated: CalEvent = { ...previous, title, date, startTime: start, endTime: end, note: note || undefined, color };
+      const updated: CalEvent = { ...previous, title, date, startTime: start, endTime: end, note: note || undefined, color, remindDayBefore };
       events[idx] = updated;
       showToast('האירוע עודכן בהצלחה 🌸');
       syncInBackground(updateEvent(updated), () => {
@@ -332,7 +356,7 @@ eventForm.addEventListener('submit', (e) => {
       });
     }
   } else {
-    const newEvent: CalEvent = { id: createId(), title, date, startTime: start, endTime: end, note: note || undefined, color };
+    const newEvent: CalEvent = { id: createId(), title, date, startTime: start, endTime: end, note: note || undefined, color, remindDayBefore };
     events.push(newEvent);
     showToast('האירוע נוסף בהצלחה 🌸');
     syncInBackground(createEvent(newEvent), () => {
@@ -431,3 +455,4 @@ function onSearchResultClick(ev: CalEvent): void {
 
 // ---------- Init ----------
 loadInitialEvents();
+initNotificationBanner();
