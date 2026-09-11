@@ -54,10 +54,21 @@ html, body {
 }
 
 .brand-logo-img {
-  height: 46px;
-  width: auto;
+  height: 38px;
+  width: 38px;
   display: block;
-  mix-blend-mode: multiply;
+  filter: drop-shadow(0 3px 6px hsl(var(--shadow-color) / 0.45));
+}
+
+.brand-title {
+  font-size: 23px;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(90deg, var(--pink-600), var(--pink-400));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.5px;
 }
 
 .icon-btn {
