@@ -315,7 +315,8 @@ html, body {
 
 .day-cell {
   position: relative;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 5 / 6;
+  overflow: hidden;
   border-radius: var(--radius-sm);
   border: none;
   background: transparent;
@@ -347,6 +348,7 @@ html, body {
   font-weight: 600;
   width: 26px;
   height: 26px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,9 +367,11 @@ html, body {
 
 .holiday-label {
   align-self: stretch;
+  flex-shrink: 0;
   min-width: 0;
   text-align: center;
   font-size: 8.5px;
+  line-height: 1.15;
   font-weight: 700;
   color: #ab7a12;
   white-space: nowrap;
@@ -380,9 +384,10 @@ html, body {
   display: flex;
   gap: 3px;
   margin-top: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   max-width: 100%;
+  flex-shrink: 0;
 }
 
 .day-dot {
