@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getPool, withErrorHandling } from '../_db';
+import { getPool, withErrorHandling } from '../_db.js';
 
 export default withErrorHandling(async function handler(req: VercelRequest, res: VercelResponse) {
   const id = typeof req.query.id === 'string' ? req.query.id : undefined;

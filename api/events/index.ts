@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getPool, toApiEvent, isValidEvent, withErrorHandling, type EventRow } from '../_db';
+import { getPool, toApiEvent, isValidEvent, withErrorHandling, type EventRow } from '../_db.js';
 
 export default withErrorHandling(async function handler(req: VercelRequest, res: VercelResponse) {
   const pool = getPool();

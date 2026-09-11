@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getPool, isValidEvent, withErrorHandling } from './_db';
+import { getPool, isValidEvent, withErrorHandling } from './_db.js';
 
 export default withErrorHandling(async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
