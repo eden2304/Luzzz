@@ -87,6 +87,10 @@ export function renderCalendar(
         chip.textContent = ev.title;
         chips.appendChild(chip);
       }
+      // keep touch-scrolling inside the chip list from bubbling into the month-swipe gesture on calendarGrid
+      chips.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+      chips.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+      chips.addEventListener('touchend', (e) => e.stopPropagation(), { passive: true });
       btn.appendChild(chips);
     }
 
