@@ -6,10 +6,16 @@ import { createEventCard } from './eventCard';
 const titleEl = document.getElementById('day-modal-title') as HTMLElement;
 const listEl = document.getElementById('day-events-list') as HTMLElement;
 
+export interface DayModalCallbacks {
+  onOpenDetails: (ev: CalEvent) => void;
+  onEdit: (ev: CalEvent) => void;
+  onDelete: (ev: CalEvent) => void;
+}
+
 export function renderDayModal(
   dateKey: string,
   events: CalEvent[],
-  onEventClick: (ev: CalEvent) => void
+  callbacks: DayModalCallbacks
 ): void {
   titleEl.textContent = formatDateKeyHuman(dateKey);
   listEl.innerHTML = '';
@@ -35,6 +41,10 @@ export function renderDayModal(
   }
 
   for (const ev of dayEvents) {
-    listEl.appendChild(createEventCard(ev, onEventClick));
+    listEl.appendChild(createEventCard(ev, {
+      onClick: callbacks.onOpenDetails,
+      onEdit: callbacks.onEdit,
+      onDelete: callbacks.onDelete,
+    }));
   }
 }

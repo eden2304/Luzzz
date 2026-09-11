@@ -1,7 +1,7 @@
 import './style.css';
 import type { CalEvent } from './types';
 import { fetchEvents, createEvent, createEventsBatch, updateEvent, deleteEvent, createId } from './storage';
-import { todayKey, timeToMinutes, minutesToTime } from './dateUtils';
+import { todayKey, timeToMinutes, minutesToTime, formatDateKeyHuman } from './dateUtils';
 import { DEFAULT_EVENT_COLOR } from './colors';
 import { renderCalendar } from './render/calendar';
 import { renderDayModal } from './render/dayModal';
@@ -46,6 +46,12 @@ const calendarGrid = document.getElementById('calendar-grid') as HTMLElement;
 
 const syncBanner = document.getElementById('sync-banner') as HTMLButtonElement;
 const notifBanner = document.getElementById('notif-banner') as HTMLButtonElement;
+
+const detailsTitle = document.getElementById('details-title') as HTMLElement;
+const detailsColor = document.getElementById('details-color') as HTMLElement;
+const detailsTime = document.getElementById('details-time') as HTMLElement;
+const detailsDate = document.getElementById('details-date') as HTMLElement;
+const detailsNote = document.getElementById('details-note') as HTMLElement;
 
 const modeToggle = document.getElementById('mode-toggle') as HTMLElement;
 const singleDateField = document.getElementById('single-date-field') as HTMLElement;
@@ -217,7 +223,11 @@ function refresh(): void {
     openDayModal(ev.date);
   });
   if (selectedDateKey) {
-    renderDayModal(selectedDateKey, events, (ev) => openEventFormForEdit(ev));
+    renderDayModal(selectedDateKey, events, {
+      onOpenDetails: openEventDetails,
+      onEdit: (ev) => openEventFormForEdit(ev),
+      onDelete: (ev) => deleteEventById(ev.id, { fromEventForm: false }),
+    });
   }
 }
 
@@ -225,6 +235,20 @@ function openDayModal(dateKey: string): void {
   selectedDateKey = dateKey;
   refresh();
   openModal('day-modal');
+}
+
+function openEventDetails(ev: CalEvent): void {
+  detailsTitle.textContent = ev.title;
+  detailsColor.style.background = ev.color;
+  detailsTime.textContent = `${ev.startTime} – ${ev.endTime}`;
+  detailsDate.textContent = formatDateKeyHuman(ev.date);
+  if (ev.note) {
+    detailsNote.textContent = ev.note;
+    detailsNote.classList.remove('hidden');
+  } else {
+    detailsNote.classList.add('hidden');
+  }
+  openModal('event-details-modal');
 }
 
 // ---------- Event form ----------
@@ -372,20 +396,24 @@ eventForm.addEventListener('submit', (e) => {
   if (cameFromDayModal) openModal('day-modal');
 });
 
-deleteBtn.addEventListener('click', () => {
-  if (!editingEventId) return;
-  if (!confirm('למחוק את האירוע הזה?')) return;
-  const removed = events.find((e) => e.id === editingEventId);
+function deleteEventById(id: string, options: { fromEventForm: boolean }): void {
+  const removed = events.find((e) => e.id === id);
   if (!removed) return;
-  events = events.filter((e) => e.id !== editingEventId);
+  if (!confirm('למחוק את האירוע הזה?')) return;
+  events = events.filter((e) => e.id !== id);
   showToast('האירוע נמחק');
   selectedDateKey = removed.date;
-  closeModal('event-form-modal');
+  if (options.fromEventForm) closeModal('event-form-modal');
   refresh();
-  if (cameFromDayModal) openModal('day-modal');
+  if (options.fromEventForm && cameFromDayModal) openModal('day-modal');
   syncInBackground(deleteEvent(removed.id), () => {
     events.push(removed);
   });
+}
+
+deleteBtn.addEventListener('click', () => {
+  if (!editingEventId) return;
+  deleteEventById(editingEventId, { fromEventForm: true });
 });
 
 // ---------- Navigation ----------

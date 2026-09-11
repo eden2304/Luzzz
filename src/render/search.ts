@@ -36,7 +36,7 @@ export function renderSearchResults(
   }
 
   for (const ev of matches) {
-    const card = createEventCard(ev, onEventClick);
+    const card = createEventCard(ev, { onClick: onEventClick });
     const body = card.querySelector('.event-card-body') as HTMLElement;
     const dateLine = document.createElement('div');
     dateLine.className = 'event-card-note';

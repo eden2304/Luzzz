@@ -734,6 +734,75 @@ html, body {
   text-overflow: ellipsis;
 }
 
+.event-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.event-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: var(--white);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.event-action-btn:hover {
+  background: var(--pink-100);
+  color: var(--pink-600);
+}
+
+.event-action-delete:hover {
+  background: #fdeaea;
+  color: #c94141;
+}
+
+/* Event details popup */
+.details-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.details-color-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+#details-time {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.details-date {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+.details-note {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--pink-50);
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
 .day-empty-state {
   text-align: center;
   padding: 30px 10px;

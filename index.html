@@ -172,6 +172,25 @@
       </div>
     </div>
 
+    <!-- Short event details popup -->
+    <div id="event-details-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+      <div class="modal-sheet details-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <h2 id="details-title" class="sheet-title"></h2>
+          <button class="icon-btn close-btn" data-close="event-details-modal" aria-label="סגירה" type="button">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+          </button>
+        </div>
+        <div class="details-row">
+          <span id="details-color" class="details-color-dot"></span>
+          <span id="details-time"></span>
+        </div>
+        <div id="details-date" class="details-date"></div>
+        <p id="details-note" class="details-note hidden"></p>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
