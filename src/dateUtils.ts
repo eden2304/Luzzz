@@ -36,7 +36,7 @@ export interface DayCell {
   isWeekend: boolean;
 }
 
-/** Builds a fixed 42-cell (6x7) grid for the given month, starting on Sunday. */
+/** Builds a 7-wide grid covering only the weeks that include at least one day of the given month. */
 export function buildMonthGrid(year: number, month: number): DayCell[] {
   const firstWeekday = new Date(year, month, 1).getDay(); // 0 = Sunday
   const totalDaysThisMonth = daysInMonth(year, month);
@@ -63,7 +63,7 @@ export function buildMonthGrid(year: number, month: number): DayCell[] {
   }
 
   let nextDay = 1;
-  while (cells.length < 42) {
+  while (cells.length % 7 !== 0) {
     const date = new Date(nextYear, nextMonth, nextDay);
     const dateKey = toDateKey(nextYear, nextMonth, nextDay);
     cells.push({ date, dateKey, day: nextDay, inCurrentMonth: false, isToday: dateKey === tKey, isWeekend: date.getDay() === 5 || date.getDay() === 6 });
