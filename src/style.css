@@ -59,6 +59,12 @@ html, body {
   gap: 8px;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .brand-logo-img {
   height: 38px;
   width: 38px;
@@ -144,12 +150,6 @@ html, body {
 
 .nav-arrow:active {
   transform: scale(0.9);
-}
-
-.today-row {
-  display: flex;
-  justify-content: center;
-  padding-bottom: 6px;
 }
 
 .pill-btn {
@@ -268,7 +268,7 @@ html, body {
 }
 
 .calendar-panel {
-  background: var(--white);
+  background: var(--pink-100);
   border-radius: var(--radius-lg);
   padding: 10px 10px 6px;
   box-shadow: 0 8px 30px hsl(var(--shadow-color) / 0.25);
@@ -312,6 +312,7 @@ html, body {
   overflow: hidden;
   border-radius: var(--radius-sm);
   border: none;
+  border-bottom: 1px solid hsl(var(--shadow-color) / 0.35);
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -324,8 +325,13 @@ html, body {
   font-family: inherit;
 }
 
+/* last row of the grid gets no bottom divider */
+.day-cell:nth-last-child(-n+7) {
+  border-bottom: none;
+}
+
 .day-cell:hover {
-  background: var(--pink-50);
+  background: var(--white);
 }
 
 .day-cell:active {
@@ -333,7 +339,7 @@ html, body {
 }
 
 .day-cell.muted {
-  color: #d8c9d0;
+  color: #c9a8b8;
 }
 
 .day-number {
@@ -355,7 +361,8 @@ html, body {
 }
 
 .day-cell.is-selected {
-  background: var(--pink-100);
+  background: var(--white);
+  box-shadow: 0 2px 8px hsl(var(--shadow-color) / 0.35);
 }
 
 .holiday-label {
