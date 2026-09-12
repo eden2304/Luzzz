@@ -1,13 +1,9 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getPool, withErrorHandling } from '../_db.js';
+import { Router } from 'express';
+import { getPool, withErrorHandling } from '../db.js';
 
-export default withErrorHandling(async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
+export const pushRouter = Router();
 
+pushRouter.post('/api/push/subscribe', withErrorHandling(async (req, res) => {
   const endpoint = req.body?.endpoint;
   const p256dh = req.body?.keys?.p256dh;
   const auth = req.body?.keys?.auth;
@@ -26,4 +22,4 @@ export default withErrorHandling(async function handler(req: VercelRequest, res:
   );
 
   res.status(201).json({ ok: true });
-});
+}));

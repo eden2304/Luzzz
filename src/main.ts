@@ -76,8 +76,8 @@ const startTimePicker: TimePicker = initTimePicker(
   (value) => {
     formError.classList.add('hidden');
     if (!endManuallySet) {
-      const newEnd = minutesToTime(timeToMinutes(value) + 60);
-      endTimePicker.setTime(newEnd, true);
+      const newEndMinutes = Math.min(timeToMinutes(value) + 60, 23 * 60 + 45);
+      endTimePicker.setTime(minutesToTime(newEndMinutes), true);
     }
   }
 );
@@ -323,7 +323,8 @@ function openEventFormForNew(dateKey: string, fromDayModal: boolean): void {
   datePicker.setDate(dateKey);
   const start = computeDefaultStart();
   startTimePicker.setTime(start, false);
-  endTimePicker.setTime(minutesToTime(timeToMinutes(start) + 60), false);
+  const defaultEndMinutes = Math.min(timeToMinutes(start) + 60, 23 * 60 + 45);
+  endTimePicker.setTime(minutesToTime(defaultEndMinutes), false);
   const [y, m] = dateKey.split('-').map(Number);
   miniCalendar.reset(y, m - 1);
 }

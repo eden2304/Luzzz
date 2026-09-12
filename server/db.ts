@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import type { Request, Response } from 'express';
 import { Pool } from 'pg';
 
 let pool: Pool | undefined;
@@ -53,9 +53,9 @@ export function toApiEvent(row: EventRow): ApiEvent {
 }
 
 export function withErrorHandling(
-  handler: (req: VercelRequest, res: VercelResponse) => Promise<void>
+  handler: (req: Request, res: Response) => Promise<void>
 ) {
-  return async (req: VercelRequest, res: VercelResponse): Promise<void> => {
+  return async (req: Request, res: Response): Promise<void> => {
     try {
       await handler(req, res);
     } catch (err) {
