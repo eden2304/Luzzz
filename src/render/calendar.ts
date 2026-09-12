@@ -43,14 +43,8 @@ export function renderCalendar(
 
   grid.innerHTML = '';
   const frag = document.createDocumentFragment();
-  let weekRow: HTMLElement | null = null;
 
-  cells.forEach((cell, index) => {
-    if (index % 7 === 0) {
-      weekRow = document.createElement('div');
-      weekRow.className = 'week-row';
-      frag.appendChild(weekRow);
-    }
+  for (const cell of cells) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'day-cell';
@@ -101,8 +95,8 @@ export function renderCalendar(
     }
 
     btn.addEventListener('click', () => callbacks.onDayClick(cell.dateKey));
-    weekRow!.appendChild(btn);
-  });
+    frag.appendChild(btn);
+  }
 
   grid.appendChild(frag);
 }
