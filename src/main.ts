@@ -11,6 +11,7 @@ import { initColorPicker, setSelectedColor, getSelectedColor } from './render/co
 import { initDatePicker, type DatePicker } from './render/datePicker';
 import { initTimePicker, type TimePicker } from './render/timePicker';
 import { initMiniCalendar, type MiniCalendar } from './render/miniCalendar';
+import { initReminderPicker, type ReminderPicker } from './render/reminderPicker';
 import { showToast } from './toast';
 import { isPushSupported, getNotificationPermission, enablePushNotifications } from './push';
 
@@ -38,7 +39,10 @@ const searchInput = document.getElementById('search-input') as HTMLInputElement;
 const eventForm = document.getElementById('event-form') as HTMLFormElement;
 const evTitle = document.getElementById('ev-title') as HTMLInputElement;
 const evNote = document.getElementById('ev-note') as HTMLInputElement;
-const evRemind = document.getElementById('ev-remind') as HTMLInputElement;
+const reminderPicker: ReminderPicker = initReminderPicker(
+  document.getElementById('reminder-picker') as HTMLElement,
+  () => formError.classList.add('hidden')
+);
 const formTitle = document.getElementById('event-form-title') as HTMLElement;
 const formError = document.getElementById('form-error') as HTMLElement;
 const deleteBtn = document.getElementById('delete-event-btn') as HTMLButtonElement;
@@ -307,7 +311,7 @@ function resetForm(): void {
   deleteBtn.classList.add('hidden');
   editingEventId = null;
   endManuallySet = false;
-  evRemind.checked = false;
+  reminderPicker.setSelected([]);
   setSelectedColor(DEFAULT_EVENT_COLOR);
   setFormMode('single');
 }
@@ -335,7 +339,7 @@ function openEventFormForEdit(ev: CalEvent): void {
   editingEventId = ev.id;
   evTitle.value = ev.title;
   evNote.value = ev.note ?? '';
-  evRemind.checked = !!ev.remindDayBefore;
+  reminderPicker.setSelected(ev.reminders ?? []);
   setSelectedColor(ev.color);
   deleteBtn.classList.remove('hidden');
   modeToggle.classList.add('hidden');
@@ -357,7 +361,7 @@ eventForm.addEventListener('submit', (e) => {
   const end = endTimePicker.getTime();
   const note = evNote.value.trim();
   const color = getSelectedColor();
-  const remindDayBefore = evRemind.checked;
+  const reminders = reminderPicker.getSelected();
 
   if (!title) {
     formError.textContent = 'נא להזין שם לאירוע';
@@ -385,7 +389,7 @@ eventForm.addEventListener('submit', (e) => {
       endTime: end,
       note: note || undefined,
       color,
-      remindDayBefore,
+      reminders,
     }));
     events.push(...newEvents);
     showToast(dates.length === 1 ? 'האירוע נוסף בהצלחה 🌸' : `${dates.length} אירועים נוספו בהצלחה 🌸`);
@@ -407,7 +411,7 @@ eventForm.addEventListener('submit', (e) => {
     const idx = events.findIndex((e2) => e2.id === editingEventId);
     if (idx !== -1) {
       const previous = events[idx];
-      const updated: CalEvent = { ...previous, title, date, startTime: start, endTime: end, note: note || undefined, color, remindDayBefore };
+      const updated: CalEvent = { ...previous, title, date, startTime: start, endTime: end, note: note || undefined, color, reminders };
       events[idx] = updated;
       showToast('האירוע עודכן בהצלחה 🌸');
       syncInBackground(updateEvent(updated), () => {
@@ -416,7 +420,7 @@ eventForm.addEventListener('submit', (e) => {
       });
     }
   } else {
-    const newEvent: CalEvent = { id: createId(), title, date, startTime: start, endTime: end, note: note || undefined, color, remindDayBefore };
+    const newEvent: CalEvent = { id: createId(), title, date, startTime: start, endTime: end, note: note || undefined, color, reminders };
     events.push(newEvent);
     showToast('האירוע נוסף בהצלחה 🌸');
     syncInBackground(createEvent(newEvent), () => {

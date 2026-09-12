@@ -6,7 +6,7 @@ export interface CalEvent {
   endTime: string; // HH:MM
   color: string; // hex
   note?: string;
-  remindDayBefore?: boolean;
+  reminders?: string[];
 }
 
 export interface EventColor {

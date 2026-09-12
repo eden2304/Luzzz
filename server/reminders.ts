@@ -1,12 +1,21 @@
 import { Router } from 'express';
 import webPush from 'web-push';
-import { getPool, withErrorHandling, type EventRow } from './db.js';
+import { getPool, withErrorHandling } from './db.js';
+import { reminderBodyText, type ReminderOffsetType } from './reminderTypes.js';
 
 interface SubRow {
   id: number;
   endpoint: string;
   p256dh: string;
   auth: string;
+}
+
+interface DueReminderRow {
+  id: number;
+  event_id: string;
+  offset_type: ReminderOffsetType;
+  title: string;
+  start_time: string;
 }
 
 export interface ReminderResult {
@@ -32,7 +41,7 @@ function ensureVapidConfigured(): boolean {
   return true;
 }
 
-/** Finds due "day before" reminders, sends a push to every subscribed device, and marks them sent. */
+/** Finds due reminders (any offset type), sends a push to every subscribed device, and marks them sent. */
 export async function sendDueReminders(): Promise<ReminderResult> {
   if (!ensureVapidConfigured()) {
     return { ok: true, events: 0, sent: 0 };
@@ -40,27 +49,30 @@ export async function sendDueReminders(): Promise<ReminderResult> {
 
   const pool = getPool();
 
-  // use Israel's calendar day, not the DB server's (likely UTC) — otherwise there's a
-  // multi-hour window right after Israel midnight where "tomorrow" hasn't rolled over yet in UTC
-  const { rows: dueEvents } = await pool.query<EventRow>(
-    `SELECT * FROM events
-     WHERE remind_day_before = true
-       AND reminder_sent_at IS NULL
-       AND date::date BETWEEN (now() AT TIME ZONE 'Asia/Jerusalem')::date
-                       AND ((now() AT TIME ZONE 'Asia/Jerusalem')::date + INTERVAL '1 day')`
+  // Israel wall-clock "now", compared against trigger_at (also Israel wall-clock, see
+  // reminderTypes.ts). Lower-bounded to the last 60 minutes so a reminder that's been
+  // unsent for a long time (e.g. after extended downtime) doesn't fire late — it's
+  // just quietly skipped instead.
+  const { rows: dueReminders } = await pool.query<DueReminderRow>(
+    `SELECT r.id, r.event_id, r.offset_type, e.title, e.start_time
+     FROM reminders r
+     JOIN events e ON e.id = r.event_id
+     WHERE r.sent_at IS NULL
+       AND r.trigger_at <= (now() AT TIME ZONE 'Asia/Jerusalem')
+       AND r.trigger_at > (now() AT TIME ZONE 'Asia/Jerusalem') - INTERVAL '60 minutes'`
   );
 
-  if (dueEvents.length === 0) {
+  if (dueReminders.length === 0) {
     return { ok: true, events: 0, sent: 0 };
   }
 
   const { rows: subs } = await pool.query<SubRow>('SELECT * FROM push_subscriptions');
 
   let sentCount = 0;
-  for (const ev of dueEvents) {
+  for (const reminder of dueReminders) {
     const payload = JSON.stringify({
-      title: `תזכורת: ${ev.title}`,
-      body: `מחר ב-${ev.start_time}`,
+      title: `תזכורת: ${reminder.title}`,
+      body: reminderBodyText(reminder.offset_type, reminder.start_time),
       url: '/',
     });
 
@@ -81,10 +93,10 @@ export async function sendDueReminders(): Promise<ReminderResult> {
       }
     }
 
-    await pool.query('UPDATE events SET reminder_sent_at = now() WHERE id = $1', [ev.id]);
+    await pool.query('UPDATE reminders SET sent_at = now() WHERE id = $1', [reminder.id]);
   }
 
-  return { ok: true, events: dueEvents.length, sent: sentCount, subscriptions: subs.length };
+  return { ok: true, events: dueReminders.length, sent: sentCount, subscriptions: subs.length };
 }
 
 /** Runs sendDueReminders on a fixed interval for as long as the process lives. */

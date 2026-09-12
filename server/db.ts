@@ -1,5 +1,6 @@
 import type { Request, Response } from 'express';
 import { Pool } from 'pg';
+import { isReminderOffsetType, type ReminderOffsetType } from './reminderTypes.js';
 
 let pool: Pool | undefined;
 
@@ -25,7 +26,6 @@ export interface EventRow {
   end_time: string;
   color: string;
   note: string | null;
-  remind_day_before: boolean;
 }
 
 export interface ApiEvent {
@@ -36,10 +36,10 @@ export interface ApiEvent {
   endTime: string;
   color: string;
   note?: string;
-  remindDayBefore?: boolean;
+  reminders?: ReminderOffsetType[];
 }
 
-export function toApiEvent(row: EventRow): ApiEvent {
+export function toApiEvent(row: EventRow, reminders: ReminderOffsetType[] = []): ApiEvent {
   return {
     id: row.id,
     title: row.title,
@@ -48,7 +48,7 @@ export function toApiEvent(row: EventRow): ApiEvent {
     endTime: row.end_time,
     color: row.color,
     note: row.note ?? undefined,
-    remindDayBefore: row.remind_day_before,
+    reminders,
   };
 }
 
@@ -77,6 +77,7 @@ export function isValidEvent(body: unknown): body is ApiEvent {
     typeof e.endTime === 'string' && /^\d{2}:\d{2}$/.test(e.endTime) &&
     typeof e.color === 'string' && e.color.length > 0 &&
     (e.note === undefined || typeof e.note === 'string') &&
-    (e.remindDayBefore === undefined || typeof e.remindDayBefore === 'boolean')
+    (e.reminders === undefined ||
+      (Array.isArray(e.reminders) && e.reminders.every(isReminderOffsetType)))
   );
 }
