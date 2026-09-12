@@ -40,11 +40,14 @@ export async function sendDueReminders(): Promise<ReminderResult> {
 
   const pool = getPool();
 
+  // use Israel's calendar day, not the DB server's (likely UTC) — otherwise there's a
+  // multi-hour window right after Israel midnight where "tomorrow" hasn't rolled over yet in UTC
   const { rows: dueEvents } = await pool.query<EventRow>(
     `SELECT * FROM events
      WHERE remind_day_before = true
        AND reminder_sent_at IS NULL
-       AND date::date BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '1 day')`
+       AND date::date BETWEEN (now() AT TIME ZONE 'Asia/Jerusalem')::date
+                       AND ((now() AT TIME ZONE 'Asia/Jerusalem')::date + INTERVAL '1 day')`
   );
 
   if (dueEvents.length === 0) {
