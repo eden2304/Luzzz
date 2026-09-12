@@ -25,7 +25,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(180deg, var(--pink-50) 0%, var(--white) 340px);
+  background: var(--pink-100);
   color: var(--ink);
   font-family: 'Heebo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   height: 100%;
@@ -302,7 +302,12 @@ html, body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-auto-rows: 1fr;
-  gap: 4px;
+  column-gap: 0;
+  row-gap: 2px;
+  /* the row-gap strip is one continuous band across all 7 columns — showing this
+     color through it is what draws a single unbroken line between weeks, instead
+     of 7 separate per-cell borders with visible breaks at the column gaps */
+  background: hsl(var(--shadow-color) / 0.35);
   flex: 1;
   min-height: 0;
 }
@@ -310,10 +315,12 @@ html, body {
 .day-cell {
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-sm);
+  /* no border-radius here: rounded corners would peel away from the row-gap
+     divider line at every column boundary, breaking it into scalloped
+     diamonds instead of one continuous band */
+  border-radius: 0;
   border: none;
-  border-bottom: 1px solid hsl(var(--shadow-color) / 0.22);
-  background: transparent;
+  background: var(--pink-100);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -323,11 +330,6 @@ html, body {
   transition: background 0.15s ease, transform 0.1s ease;
   color: var(--ink);
   font-family: inherit;
-}
-
-/* only the last row (last 7 cells) skips the divider — nothing below it to separate from */
-.day-cell:nth-last-child(-n+7) {
-  border-bottom: none;
 }
 
 .day-cell:hover {
