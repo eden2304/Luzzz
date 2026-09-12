@@ -487,8 +487,8 @@ calendarGrid.addEventListener('touchstart', (e) => {
 calendarGrid.addEventListener('touchend', (e) => {
   const deltaX = e.changedTouches[0].clientX - touchStartX;
   if (Math.abs(deltaX) < 45) return;
-  if (deltaX < 0) nextBtn.click();
-  else prevBtn.click();
+  if (deltaX < 0) prevBtn.click();
+  else nextBtn.click();
 }, { passive: true });
 
 // ---------- Add event entry points ----------
