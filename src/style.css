@@ -258,6 +258,31 @@ html, body {
   color: var(--white);
 }
 
+.reminder-chip-custom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.reminder-minutes-input {
+  width: 34px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0;
+  outline: none;
+}
+
+.reminder-minutes-input::placeholder {
+  color: inherit;
+  opacity: 0.55;
+}
+
 /* Layout */
 .main-layout {
   display: flex;
@@ -896,33 +921,18 @@ html, body {
   background: var(--white);
 }
 
-/* Mode toggle (single day / multiple dates) */
-.mode-toggle {
-  display: flex;
-  gap: 6px;
+/* Static, non-interactive date display — used when the day is already fixed by context
+   (adding an event from within a specific day), so there is nowhere to change it */
+.date-display {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 14.5px;
+  font-weight: 700;
+  text-align: center;
   background: var(--pink-50);
-  padding: 4px;
-  border-radius: var(--radius-md);
-}
-
-.mode-btn {
-  flex: 1;
-  border: none;
-  background: transparent;
-  color: var(--ink-soft);
-  font-weight: 600;
-  font-size: 13px;
-  padding: 9px 6px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-  font-family: inherit;
-}
-
-.mode-btn.active {
-  background: var(--white);
-  color: var(--pink-600);
-  box-shadow: 0 2px 8px hsl(var(--shadow-color) / 0.35);
+  color: var(--ink);
 }
 
 /* Chip scroller (date + time pickers) */
@@ -1054,6 +1064,10 @@ html, body {
   border: 1.5px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--pink-50);
+  /* hours column is appended before minutes in the DOM; force ltr layout here so that
+     order reads visually left-to-right (hours left, minutes right) instead of being
+     mirrored by the page's overall RTL direction */
+  direction: ltr;
 }
 
 .time-wheel-panel.hidden {

@@ -1,23 +1,23 @@
 import { Router } from 'express';
 import type { Pool, PoolClient } from 'pg';
-import { getPool, toApiEvent, isValidEvent, withErrorHandling, type EventRow } from '../db.js';
-import { computeTriggerAt, type ReminderOffsetType } from '../reminderTypes.js';
+import { getPool, toApiEvent, isValidEvent, withErrorHandling, type EventRow, type ReminderSpec } from '../db.js';
+import { computeTriggerAt } from '../reminderTypes.js';
 
 export const eventsRouter = Router();
 
 async function setReminders(
   db: Pool | PoolClient,
   eventId: string,
-  offsetTypes: ReminderOffsetType[],
+  reminders: ReminderSpec[],
   date: string,
   startTime: string
 ): Promise<void> {
   await db.query('DELETE FROM reminders WHERE event_id = $1', [eventId]);
-  for (const offsetType of offsetTypes) {
-    const triggerAt = computeTriggerAt(offsetType, date, startTime);
+  for (const reminder of reminders) {
+    const triggerAt = computeTriggerAt(reminder.type, date, startTime, reminder.minutesBefore);
     await db.query(
-      'INSERT INTO reminders (event_id, offset_type, trigger_at) VALUES ($1, $2, $3)',
-      [eventId, offsetType, triggerAt]
+      'INSERT INTO reminders (event_id, offset_type, minutes_before, trigger_at) VALUES ($1, $2, $3, $4)',
+      [eventId, reminder.type, reminder.minutesBefore ?? null, triggerAt]
     );
   }
 }
@@ -27,13 +27,13 @@ eventsRouter.get('/api/events', withErrorHandling(async (req, res) => {
   const { rows: eventRows } = await pool.query<EventRow>(
     'SELECT * FROM events ORDER BY date ASC, start_time ASC'
   );
-  const { rows: reminderRows } = await pool.query<{ event_id: string; offset_type: ReminderOffsetType }>(
-    'SELECT event_id, offset_type FROM reminders'
+  const { rows: reminderRows } = await pool.query<{ event_id: string } & ReminderSpec>(
+    'SELECT event_id, offset_type AS type, minutes_before AS "minutesBefore" FROM reminders'
   );
-  const remindersByEvent = new Map<string, ReminderOffsetType[]>();
+  const remindersByEvent = new Map<string, ReminderSpec[]>();
   for (const r of reminderRows) {
     const list = remindersByEvent.get(r.event_id) ?? [];
-    list.push(r.offset_type);
+    list.push({ type: r.type, minutesBefore: r.minutesBefore ?? undefined });
     remindersByEvent.set(r.event_id, list);
   }
   res.status(200).json(eventRows.map((row) => toApiEvent(row, remindersByEvent.get(row.id) ?? [])));

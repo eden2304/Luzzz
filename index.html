@@ -99,12 +99,12 @@
             <input id="ev-title" name="title" type="text" placeholder="לדוגמה: המבורגר עם עדן, משחק של הפועל" required maxlength="80" />
           </label>
 
-          <div id="mode-toggle" class="mode-toggle">
-            <button type="button" class="mode-btn active" data-mode="single">יום בודד</button>
-            <button type="button" class="mode-btn" data-mode="multi">מספר תאריכים</button>
+          <div id="fixed-date-field" class="field hidden">
+            <span class="field-label">תאריך</span>
+            <div id="fixed-date-display" class="date-display"></div>
           </div>
 
-          <div id="single-date-field" class="field">
+          <div id="single-date-field" class="field hidden">
             <span class="field-label">תאריך</span>
             <div id="date-picker" class="chip-scroller-wrap"></div>
             <span id="date-readable" class="picker-readable"></span>

@@ -2,6 +2,21 @@ import type { Request, Response } from 'express';
 import { Pool } from 'pg';
 import { isReminderOffsetType, type ReminderOffsetType } from './reminderTypes.js';
 
+export interface ReminderSpec {
+  type: ReminderOffsetType;
+  minutesBefore?: number;
+}
+
+function isValidReminderSpec(value: unknown): value is ReminderSpec {
+  if (!value || typeof value !== 'object') return false;
+  const r = value as Record<string, unknown>;
+  if (!isReminderOffsetType(r.type)) return false;
+  if (r.type === 'minutes_before') {
+    return typeof r.minutesBefore === 'number' && Number.isInteger(r.minutesBefore) && r.minutesBefore > 0;
+  }
+  return true;
+}
+
 let pool: Pool | undefined;
 
 export function getPool(): Pool {
@@ -36,10 +51,10 @@ export interface ApiEvent {
   endTime: string;
   color: string;
   note?: string;
-  reminders?: ReminderOffsetType[];
+  reminders?: ReminderSpec[];
 }
 
-export function toApiEvent(row: EventRow, reminders: ReminderOffsetType[] = []): ApiEvent {
+export function toApiEvent(row: EventRow, reminders: ReminderSpec[] = []): ApiEvent {
   return {
     id: row.id,
     title: row.title,
@@ -78,6 +93,6 @@ export function isValidEvent(body: unknown): body is ApiEvent {
     typeof e.color === 'string' && e.color.length > 0 &&
     (e.note === undefined || typeof e.note === 'string') &&
     (e.reminders === undefined ||
-      (Array.isArray(e.reminders) && e.reminders.every(isReminderOffsetType)))
+      (Array.isArray(e.reminders) && e.reminders.every(isValidReminderSpec)))
   );
 }

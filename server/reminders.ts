@@ -14,6 +14,7 @@ interface DueReminderRow {
   id: number;
   event_id: string;
   offset_type: ReminderOffsetType;
+  minutes_before: number | null;
   title: string;
   start_time: string;
 }
@@ -54,7 +55,7 @@ export async function sendDueReminders(): Promise<ReminderResult> {
   // unsent for a long time (e.g. after extended downtime) doesn't fire late — it's
   // just quietly skipped instead.
   const { rows: dueReminders } = await pool.query<DueReminderRow>(
-    `SELECT r.id, r.event_id, r.offset_type, e.title, e.start_time
+    `SELECT r.id, r.event_id, r.offset_type, r.minutes_before, e.title, e.start_time
      FROM reminders r
      JOIN events e ON e.id = r.event_id
      WHERE r.sent_at IS NULL
@@ -72,7 +73,7 @@ export async function sendDueReminders(): Promise<ReminderResult> {
   for (const reminder of dueReminders) {
     const payload = JSON.stringify({
       title: `תזכורת: ${reminder.title}`,
-      body: reminderBodyText(reminder.offset_type, reminder.start_time),
+      body: reminderBodyText(reminder.offset_type, reminder.start_time, reminder.minutes_before),
       url: '/',
     });
 

@@ -24,7 +24,8 @@ let selectedDateKey: string | null = null;
 let editingEventId: string | null = null;
 let defaultFormDate: string = todayKey();
 let cameFromDayModal = false;
-let formMode: 'single' | 'multi' = 'single';
+let formMode: 'single' | 'multi' | 'fixed' = 'fixed';
+let fixedDateKey: string | null = null;
 let endManuallySet = false;
 
 // ---------- Elements ----------
@@ -61,7 +62,8 @@ const confirmMessage = document.getElementById('confirm-message') as HTMLElement
 const confirmCancelBtn = document.getElementById('confirm-cancel-btn') as HTMLButtonElement;
 const confirmOkBtn = document.getElementById('confirm-ok-btn') as HTMLButtonElement;
 
-const modeToggle = document.getElementById('mode-toggle') as HTMLElement;
+const fixedDateField = document.getElementById('fixed-date-field') as HTMLElement;
+const fixedDateDisplay = document.getElementById('fixed-date-display') as HTMLElement;
 const singleDateField = document.getElementById('single-date-field') as HTMLElement;
 const multiDateField = document.getElementById('multi-date-field') as HTMLElement;
 const dateReadable = document.getElementById('date-readable') as HTMLElement;
@@ -347,19 +349,13 @@ function openEventDetails(ev: CalEvent): void {
 }
 
 // ---------- Event form ----------
-function setFormMode(mode: 'single' | 'multi'): void {
+function setFormMode(mode: 'single' | 'multi' | 'fixed'): void {
   formMode = mode;
-  modeToggle.querySelectorAll<HTMLElement>('.mode-btn').forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.mode === mode);
-  });
+  fixedDateField.classList.toggle('hidden', mode !== 'fixed');
   singleDateField.classList.toggle('hidden', mode !== 'single');
   multiDateField.classList.toggle('hidden', mode !== 'multi');
   formError.classList.add('hidden');
 }
-
-modeToggle.querySelectorAll<HTMLElement>('.mode-btn').forEach((btn) => {
-  btn.addEventListener('click', () => setFormMode(btn.dataset.mode as 'single' | 'multi'));
-});
 
 function resetForm(): void {
   eventForm.reset();
@@ -369,24 +365,29 @@ function resetForm(): void {
   endManuallySet = false;
   reminderPicker.setSelected([]);
   setSelectedColor(DEFAULT_EVENT_COLOR);
-  setFormMode('single');
 }
 
 function openEventFormForNew(dateKey: string, fromDayModal: boolean): void {
   resetForm();
   formTitle.textContent = 'אירוע חדש';
   cameFromDayModal = fromDayModal;
-  modeToggle.classList.toggle('hidden', fromDayModal);
   closeModal('day-modal');
   openModal('event-form-modal', false);
-  // pickers need real layout (not display:none) to auto-scroll to the selection
-  datePicker.setDate(dateKey);
+  if (fromDayModal) {
+    // the day is already fixed by context — no reason to offer changing it here
+    setFormMode('fixed');
+    fixedDateKey = dateKey;
+    fixedDateDisplay.textContent = formatDateKeyHuman(dateKey);
+  } else {
+    setFormMode('multi');
+    fixedDateKey = null;
+    const [y, m] = dateKey.split('-').map(Number);
+    miniCalendar.reset(y, m - 1);
+  }
   const start = computeDefaultStart();
   startTimePicker.setTime(start, false);
   const defaultEndMinutes = Math.min(timeToMinutes(start) + 60, 23 * 60 + 45);
   endTimePicker.setTime(minutesToTime(defaultEndMinutes), false);
-  const [y, m] = dateKey.split('-').map(Number);
-  miniCalendar.reset(y, m - 1);
 }
 
 function openEventFormForEdit(ev: CalEvent): void {
@@ -398,10 +399,10 @@ function openEventFormForEdit(ev: CalEvent): void {
   reminderPicker.setSelected(ev.reminders ?? []);
   setSelectedColor(ev.color);
   deleteBtn.classList.remove('hidden');
-  modeToggle.classList.add('hidden');
   cameFromDayModal = true;
   closeModal('day-modal');
   openModal('event-form-modal', false);
+  setFormMode('single');
   datePicker.setDate(ev.date);
   startTimePicker.setTime(ev.startTime, false);
   endTimePicker.setTime(ev.endTime, false);
@@ -461,7 +462,7 @@ eventForm.addEventListener('submit', (e) => {
     return;
   }
 
-  const date = datePicker.getDate();
+  const date = formMode === 'fixed' ? (fixedDateKey as string) : datePicker.getDate();
 
   if (editingEventId) {
     const idx = events.findIndex((e2) => e2.id === editingEventId);
@@ -589,4 +590,8 @@ syncPushSubscriptionIfGranted();
 enableSwipeToDismiss(
   document.querySelector('#event-form-modal .modal-sheet') as HTMLElement,
   dismissEventForm
+);
+enableSwipeToDismiss(
+  document.querySelector('#day-modal .modal-sheet') as HTMLElement,
+  dismissDayModal
 );

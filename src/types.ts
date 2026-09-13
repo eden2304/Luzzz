@@ -1,3 +1,10 @@
+export type ReminderOffsetType = 'day_before' | 'minutes_before';
+
+export interface ReminderSpec {
+  type: ReminderOffsetType;
+  minutesBefore?: number; // required when type === 'minutes_before'
+}
+
 export interface CalEvent {
   id: string;
   title: string;
@@ -6,7 +13,7 @@ export interface CalEvent {
   endTime: string; // HH:MM
   color: string; // hex
   note?: string;
-  reminders?: string[];
+  reminders?: ReminderSpec[];
 }
 
 export interface EventColor {
