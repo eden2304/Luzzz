@@ -85,8 +85,14 @@ export async function sendDueReminders(): Promise<ReminderResult> {
         sentCount++;
       } catch (err) {
         const statusCode = (err as { statusCode?: number })?.statusCode;
-        if (statusCode === 404 || statusCode === 410) {
+        // 404/410: subscription gone (uninstalled, storage cleared). 401/403: the
+        // subscription was created under a VAPID key that no longer matches ours (e.g. an
+        // old device that subscribed before a key rotation) — push service will never
+        // accept it again either way, so it silently blocks that device forever unless we
+        // drop it here and let the client re-subscribe fresh (see src/push.ts sync-on-load).
+        if (statusCode === 404 || statusCode === 410 || statusCode === 401 || statusCode === 403) {
           await pool.query('DELETE FROM push_subscriptions WHERE id = $1', [sub.id]);
+          console.error(`Push subscription ${sub.id} invalid (status ${statusCode}) — removed`);
         } else {
           console.error('Push send failed for subscription', sub.id, err);
         }

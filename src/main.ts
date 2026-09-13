@@ -13,7 +13,7 @@ import { initTimePicker, type TimePicker } from './render/timePicker';
 import { initMiniCalendar, type MiniCalendar } from './render/miniCalendar';
 import { initReminderPicker, type ReminderPicker } from './render/reminderPicker';
 import { showToast } from './toast';
-import { isPushSupported, getNotificationPermission, enablePushNotifications } from './push';
+import { isPushSupported, getNotificationPermission, enablePushNotifications, syncPushSubscriptionIfGranted } from './push';
 
 // ---------- State ----------
 let events: CalEvent[] = [];
@@ -529,3 +529,4 @@ function onSearchResultClick(ev: CalEvent): void {
 // ---------- Init ----------
 loadInitialEvents();
 initNotificationBanner();
+syncPushSubscriptionIfGranted();

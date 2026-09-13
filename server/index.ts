@@ -30,8 +30,10 @@ async function main(): Promise<void> {
     console.log(`Luzzzz server listening on port ${PORT}`);
   });
 
-  // checks every 5 minutes — this is what Vercel's Hobby-plan once-a-day cron couldn't do
-  startReminderScheduler(5);
+  // checks every minute — Railway runs this as a persistent process (unlike Vercel's
+  // Hobby-plan once-a-day cron), so a tight interval costs nothing but keeps notification
+  // delay to under a minute instead of up to 5
+  startReminderScheduler(1);
 }
 
 main().catch((err) => {
