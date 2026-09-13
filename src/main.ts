@@ -170,12 +170,68 @@ notifBanner.addEventListener('click', async () => {
 });
 
 // ---------- Modal helpers ----------
-function openModal(id: string): void {
+function openModal(id: string, autofocus = true): void {
   const el = document.getElementById(id) as HTMLElement;
   el.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
-  const firstInput = el.querySelector<HTMLElement>('input, button.primary-btn');
-  requestAnimationFrame(() => firstInput?.focus());
+  if (autofocus) {
+    const firstInput = el.querySelector<HTMLElement>('input, button.primary-btn');
+    requestAnimationFrame(() => firstInput?.focus());
+  }
+}
+
+/**
+ * Lets the sheet be dragged down to dismiss, like a native bottom sheet. Only takes over
+ * once the sheet is already scrolled to its top (so it doesn't fight normal scrolling of
+ * the form content) and once the drag is clearly more vertical than horizontal (so it
+ * doesn't fight the horizontal chip scrollers for date/color/reminders, which don't stop
+ * propagation the way the wheel time picker and day-chips do).
+ */
+function enableSwipeToDismiss(sheet: HTMLElement, onDismiss: () => void): void {
+  let startX = 0;
+  let startY = 0;
+  let lastY = 0;
+  let dragging = false;
+
+  sheet.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    lastY = startY;
+    dragging = false;
+  }, { passive: true });
+
+  sheet.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1 || sheet.scrollTop > 0) return;
+    lastY = e.touches[0].clientY;
+    const deltaX = e.touches[0].clientX - startX;
+    const deltaY = lastY - startY;
+    if (!dragging) {
+      if (deltaY < 8 || Math.abs(deltaX) > Math.abs(deltaY)) return;
+      dragging = true;
+      sheet.style.transition = 'none';
+    }
+    e.preventDefault();
+    sheet.style.transform = `translateY(${deltaY}px)`;
+  }, { passive: false });
+
+  sheet.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    const deltaY = lastY - startY;
+    sheet.style.transition = 'transform 0.22s ease';
+    if (deltaY > 90) {
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        sheet.style.transition = '';
+        sheet.style.transform = '';
+        onDismiss();
+      }, 200);
+    } else {
+      sheet.style.transform = 'translateY(0)';
+      setTimeout(() => { sheet.style.transition = ''; }, 220);
+    }
+  });
 }
 
 function closeModal(id: string): void {
@@ -322,7 +378,7 @@ function openEventFormForNew(dateKey: string, fromDayModal: boolean): void {
   cameFromDayModal = fromDayModal;
   modeToggle.classList.toggle('hidden', fromDayModal);
   closeModal('day-modal');
-  openModal('event-form-modal');
+  openModal('event-form-modal', false);
   // pickers need real layout (not display:none) to auto-scroll to the selection
   datePicker.setDate(dateKey);
   const start = computeDefaultStart();
@@ -345,7 +401,7 @@ function openEventFormForEdit(ev: CalEvent): void {
   modeToggle.classList.add('hidden');
   cameFromDayModal = true;
   closeModal('day-modal');
-  openModal('event-form-modal');
+  openModal('event-form-modal', false);
   datePicker.setDate(ev.date);
   startTimePicker.setTime(ev.startTime, false);
   endTimePicker.setTime(ev.endTime, false);
@@ -530,3 +586,7 @@ function onSearchResultClick(ev: CalEvent): void {
 loadInitialEvents();
 initNotificationBanner();
 syncPushSubscriptionIfGranted();
+enableSwipeToDismiss(
+  document.querySelector('#event-form-modal .modal-sheet') as HTMLElement,
+  dismissEventForm
+);

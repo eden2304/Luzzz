@@ -992,8 +992,7 @@ html, body {
   display: none;
 }
 
-.chip .chip-line1:only-child,
-.time-scroller .chip-line1 {
+.chip .chip-line1:only-child {
   font-size: 13.5px;
   font-weight: 700;
   opacity: 1;
@@ -1011,10 +1010,6 @@ html, body {
   white-space: nowrap;
 }
 
-.time-scroller .chip {
-  min-width: 58px;
-}
-
 .picker-readable {
   display: block;
   text-align: center;
@@ -1022,6 +1017,104 @@ html, body {
   color: var(--pink-600);
   font-weight: 600;
   margin-top: 6px;
+}
+
+/* Wheel time picker — tap the value to expand an iOS-style scrolling hour/minute wheel */
+.time-wheel-field {
+  min-width: 0;
+}
+
+.time-wheel-toggle {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  background: var(--pink-50);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.time-wheel-toggle.is-open {
+  border-color: var(--pink-400);
+  background: var(--white);
+}
+
+.time-wheel-panel {
+  position: relative;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--pink-50);
+}
+
+.time-wheel-panel.hidden {
+  display: none;
+}
+
+.wheel-col {
+  position: relative;
+  z-index: 1;
+  height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-width: none;
+  flex: 1;
+  min-width: 0;
+}
+
+.wheel-col::-webkit-scrollbar {
+  display: none;
+}
+
+.wheel-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  opacity: 0.35;
+  cursor: pointer;
+  transition: opacity 0.15s ease, color 0.15s ease, font-weight 0.15s ease;
+}
+
+.wheel-item.is-center {
+  opacity: 1;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.wheel-colon {
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.wheel-highlight {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 36px;
+  border-radius: 10px;
+  background: hsl(var(--shadow-color) / 0.15);
+  border-top: 1.5px solid var(--pink-300);
+  border-bottom: 1.5px solid var(--pink-300);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Mini multi-select calendar */
