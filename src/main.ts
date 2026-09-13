@@ -491,9 +491,13 @@ calendarGrid.addEventListener('touchstart', (e) => {
 calendarGrid.addEventListener('touchend', (e) => {
   const deltaX = e.changedTouches[0].clientX - touchStartX;
   if (Math.abs(deltaX) < 45) return;
+  // without this, the browser still synthesizes a click after touchend; by the time it
+  // fires the month has already changed, so it lands on whatever day-cell is now at that
+  // same screen position and opens/selects it as a ghost tap
+  e.preventDefault();
   if (deltaX < 0) prevBtn.click();
   else nextBtn.click();
-}, { passive: true });
+}, { passive: false });
 
 // ---------- Add event entry points ----------
 fabAdd.addEventListener('click', () => {

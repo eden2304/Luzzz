@@ -332,8 +332,14 @@ html, body {
   font-family: inherit;
 }
 
-.day-cell:hover {
-  background: var(--white);
+/* scoped to real pointers only — on a touchscreen the OS applies :hover to
+   whatever cell ends up under your finger after a tap/swipe and there is no
+   mouse to "unhover" it with, so the highlight gets stuck on that cell
+   (this is what caused a random day to stay highlighted after swiping months) */
+@media (hover: hover) and (pointer: fine) {
+  .day-cell:hover {
+    background: var(--white);
+  }
 }
 
 .day-cell:active {
