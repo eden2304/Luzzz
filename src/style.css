@@ -268,19 +268,21 @@ html, body {
 
 .reminder-custom-list {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 8px;
   width: 100%;
 }
 
+/* Same pill footprint as .reminder-chip (day before) — the request was specifically to
+   make this look like that small chip instead of the larger boxed row it used to be. */
 .reminder-custom-row {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   border: 1.5px solid var(--line);
   background: var(--pink-50);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  border-radius: 999px;
+  padding: 6px 8px 6px 14px;
 }
 
 /* Extra specificity (.reminder-custom-row prefix) is needed here to beat the generic
@@ -288,17 +290,17 @@ html, body {
    ".field input" (class+element) otherwise silently wins over a single-class selector,
    which is exactly what made an earlier version of this box look faint/illegible. */
 .reminder-custom-row .reminder-minutes-input {
-  width: 52px;
+  width: 30px;
   flex-shrink: 0;
   border: 1.5px solid var(--pink-300);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--white);
   color: var(--ink);
   font-family: inherit;
-  font-size: 16px;
+  font-size: 12.5px;
   font-weight: 700;
   text-align: center;
-  padding: 7px 4px;
+  padding: 3px 2px;
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -313,8 +315,7 @@ html, body {
 }
 
 .reminder-custom-label {
-  flex: 1;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--ink-soft);
 }
@@ -323,8 +324,8 @@ html, body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
   border: none;
   border-radius: 50%;
@@ -1298,6 +1299,10 @@ html, body {
 }
 
 .color-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   width: 34px;
   height: 34px;
   border-radius: 50%;
@@ -1313,6 +1318,38 @@ html, body {
 .color-swatch.selected {
   border-color: var(--ink);
   transform: scale(1.1);
+}
+
+/* Custom color swatch: a rainbow placeholder with a "+" until something is picked via the
+   hidden native color input, then it just looks like any other swatch (never added to
+   EVENT_COLORS — this is a one-off pick, used only for the event being edited right now) */
+.color-swatch-custom {
+  background: conic-gradient(from 0deg, #ff8fb8, #ffbf86, #f4d35e, #7fd9b6, #7fc4e0, #b39ddb, #d17fb0, #ff8fb8);
+  overflow: hidden;
+}
+
+.color-swatch-custom::after {
+  content: '+';
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.color-swatch-custom.has-value::after {
+  display: none;
+}
+
+.color-swatch-custom-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
 .form-error {
