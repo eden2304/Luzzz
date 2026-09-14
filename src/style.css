@@ -231,11 +231,13 @@ html, body {
 /* Reminder picker (multi-select chips) */
 .reminder-picker {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
+  align-items: flex-start;
 }
 
 .reminder-chip {
+  align-self: flex-start;
   border: 1.5px solid var(--line);
   background: var(--pink-50);
   color: var(--ink-soft);
@@ -258,29 +260,98 @@ html, body {
   color: var(--white);
 }
 
-.reminder-chip-custom {
+.reminder-custom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.reminder-custom-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  cursor: pointer;
+  gap: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--pink-50);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
 }
 
-.reminder-minutes-input {
-  width: 34px;
-  border: none;
-  background: transparent;
-  color: inherit;
+/* Extra specificity (.reminder-custom-row prefix) is needed here to beat the generic
+   ".field input" rule — this input lives inside a ".field" wrapper (for the label), and
+   ".field input" (class+element) otherwise silently wins over a single-class selector,
+   which is exactly what made an earlier version of this box look faint/illegible. */
+.reminder-custom-row .reminder-minutes-input {
+  width: 52px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--pink-300);
+  border-radius: 10px;
+  background: var(--white);
+  color: var(--ink);
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
-  padding: 0;
+  padding: 7px 4px;
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
-.reminder-minutes-input::placeholder {
-  color: inherit;
-  opacity: 0.55;
+.reminder-custom-row .reminder-minutes-input:focus {
+  border-color: var(--pink-500);
+}
+
+.reminder-custom-row .reminder-minutes-input::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.5;
+}
+
+.reminder-custom-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.reminder-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.reminder-remove-btn:hover {
+  background: var(--pink-100);
+  color: var(--pink-600);
+}
+
+.reminder-add-btn {
+  border: 1.5px dashed var(--pink-300);
+  background: transparent;
+  color: var(--pink-600);
+  font-weight: 600;
+  font-size: 12.5px;
+  font-family: inherit;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.reminder-add-btn:hover {
+  background: var(--pink-50);
+}
+
+.reminder-add-btn:active {
+  transform: scale(0.96);
 }
 
 /* Layout */

@@ -5,12 +5,50 @@ export interface ReminderPicker {
   getSelected: () => ReminderSpec[];
 }
 
+function createCustomRow(list: HTMLElement, onChange: () => void, initialValue?: number): void {
+  const row = document.createElement('div');
+  row.className = 'reminder-custom-row';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.inputMode = 'numeric';
+  input.pattern = '[0-9]*';
+  input.maxLength = 3;
+  input.placeholder = '30';
+  input.className = 'reminder-minutes-input';
+  input.setAttribute('aria-label', 'מספר דקות לפני האירוע');
+  if (initialValue) input.value = String(initialValue);
+
+  const label = document.createElement('span');
+  label.className = 'reminder-custom-label';
+  label.textContent = 'דקות לפני';
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'reminder-remove-btn';
+  removeBtn.setAttribute('aria-label', 'הסרת תזכורת זו');
+  removeBtn.innerHTML =
+    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>';
+
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/[^0-9]/g, '').slice(0, 3);
+    onChange();
+  });
+
+  removeBtn.addEventListener('click', () => {
+    row.remove();
+    onChange();
+  });
+
+  row.append(input, label, removeBtn);
+  list.appendChild(row);
+}
+
 export function initReminderPicker(container: HTMLElement, onChange: () => void): ReminderPicker {
   container.innerHTML = '';
   container.classList.add('reminder-picker');
 
   let dayBeforeSelected = false;
-  let customSelected = false;
 
   const dayChip = document.createElement('button');
   dayChip.type = 'button';
@@ -22,63 +60,39 @@ export function initReminderPicker(container: HTMLElement, onChange: () => void)
     onChange();
   });
 
-  const customChip = document.createElement('div');
-  customChip.className = 'reminder-chip reminder-chip-custom';
+  const customList = document.createElement('div');
+  customList.className = 'reminder-custom-list';
 
-  const minutesInput = document.createElement('input');
-  minutesInput.type = 'text';
-  minutesInput.inputMode = 'numeric';
-  minutesInput.pattern = '[0-9]*';
-  minutesInput.maxLength = 3;
-  minutesInput.placeholder = '30';
-  minutesInput.className = 'reminder-minutes-input';
-  minutesInput.setAttribute('aria-label', 'מספר דקות לפני האירוע');
-
-  const customLabel = document.createElement('span');
-  customLabel.textContent = 'דקות לפני';
-
-  customChip.append(minutesInput, customLabel);
-
-  function setCustomSelected(value: boolean): void {
-    customSelected = value;
-    customChip.classList.toggle('selected', value);
-  }
-
-  minutesInput.addEventListener('click', (e) => e.stopPropagation());
-  minutesInput.addEventListener('input', () => {
-    minutesInput.value = minutesInput.value.replace(/[^0-9]/g, '').slice(0, 3);
-    setCustomSelected(Number(minutesInput.value) > 0);
-    onChange();
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'reminder-add-btn';
+  addBtn.textContent = '+ הוספת תזכורת בדקות';
+  addBtn.addEventListener('click', () => {
+    createCustomRow(customList, onChange);
+    customList.lastElementChild?.querySelector('input')?.focus();
   });
 
-  // tapping the chip (but not the input itself, handled above) toggles it — if turning it
-  // on with nothing typed yet, focus the input instead of "selecting" an empty reminder
-  customChip.addEventListener('click', (e) => {
-    if (e.target === minutesInput) return;
-    if (!customSelected && !minutesInput.value) {
-      minutesInput.focus();
-      return;
-    }
-    setCustomSelected(!customSelected);
-    onChange();
-  });
-
-  container.append(dayChip, customChip);
+  container.append(dayChip, customList, addBtn);
 
   return {
     setSelected: (specs) => {
       dayBeforeSelected = specs.some((s) => s.type === 'day_before');
       dayChip.classList.toggle('selected', dayBeforeSelected);
 
-      const custom = specs.find((s) => s.type === 'minutes_before');
-      minutesInput.value = custom?.minutesBefore ? String(custom.minutesBefore) : '';
-      setCustomSelected(!!custom?.minutesBefore);
+      customList.innerHTML = '';
+      for (const spec of specs) {
+        if (spec.type === 'minutes_before' && spec.minutesBefore) {
+          createCustomRow(customList, onChange, spec.minutesBefore);
+        }
+      }
     },
     getSelected: () => {
       const specs: ReminderSpec[] = [];
       if (dayBeforeSelected) specs.push({ type: 'day_before' });
-      const minutes = Number(minutesInput.value);
-      if (customSelected && minutes > 0) specs.push({ type: 'minutes_before', minutesBefore: minutes });
+      customList.querySelectorAll<HTMLInputElement>('.reminder-minutes-input').forEach((input) => {
+        const minutesBefore = Number(input.value);
+        if (minutesBefore > 0) specs.push({ type: 'minutes_before', minutesBefore });
+      });
       return specs;
     },
   };
