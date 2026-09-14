@@ -378,7 +378,7 @@ function openEventFormForNew(dateKey: string, fromDayModal: boolean): void {
   formTitle.textContent = 'אירוע חדש';
   cameFromDayModal = fromDayModal;
   closeModal('day-modal');
-  openModal('event-form-modal', false);
+  openModal('event-form-modal');
   if (fromDayModal) {
     // the day is already fixed by context — no reason to offer changing it here
     setFormMode('fixed');
