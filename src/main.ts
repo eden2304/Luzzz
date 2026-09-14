@@ -281,8 +281,14 @@ function dismissDayModal(): void {
 
 function dismissEventForm(): void {
   closeModal('event-form-modal');
-  if (cameFromDayModal && selectedDateKey) {
+  // only return to the day sheet when cancelling an *edit* (the user was browsing that
+  // day's events and tapped in) — cancelling a brand-new event added via "add for this
+  // day" has nothing to show there, so it should drop straight back to the calendar
+  if (editingEventId && cameFromDayModal && selectedDateKey) {
     openModal('day-modal');
+  } else {
+    selectedDateKey = null;
+    refresh();
   }
 }
 

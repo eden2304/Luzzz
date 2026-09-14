@@ -236,8 +236,14 @@ html, body {
   align-items: flex-start;
 }
 
+.reminder-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .reminder-chip {
-  align-self: flex-start;
   border: 1.5px solid var(--line);
   background: var(--pink-50);
   color: var(--ink-soft);

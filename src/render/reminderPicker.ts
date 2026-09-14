@@ -72,7 +72,11 @@ export function initReminderPicker(container: HTMLElement, onChange: () => void)
     customList.lastElementChild?.querySelector('input')?.focus();
   });
 
-  container.append(dayChip, customList, addBtn);
+  const topRow = document.createElement('div');
+  topRow.className = 'reminder-top-row';
+  topRow.append(dayChip, addBtn);
+
+  container.append(topRow, customList);
 
   return {
     setSelected: (specs) => {
